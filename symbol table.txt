@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 100
+
+// Structure for each symbol
+struct symbol {
+    char name[50];
+    char type[20];
+    int size;
+    int scope;
+    struct symbol *next;
+};
+
+// Hash table
+struct symbol* table[MAX];
+
+// Hash function
+int hash(char *name) {
+    int i, sum = 0;
+    for (i = 0; name[i] != '\0'; i++) {
+        sum += name[i];
+    }
+    return sum % MAX;
+}
+
+// Insert symbol
+void insert(char *name, char *type, int size, int scope) {
+    int index = hash(name);
+    struct symbol *newSymbol = (struct symbol*)malloc(sizeof(struct symbol));
+    strcpy(newSymbol->name, name);
+    strcpy(newSymbol->type, type);
+    newSymbol->size = size;
+    newSymbol->scope = scope;
+    newSymbol->next = NULL;
+
+    // Prevent duplicate declaration in same scope
+    struct symbol *temp = table[index];
+    while (temp != NULL) {
+        if (strcmp(temp->name, name) == 0 && temp->scope == scope) {
+            printf("Error: '%s' already declared in scope %d\n", name, scope);
+            free(newSymbol);
+            return;
+        }
+        temp = temp->next;
+    }
+
+    // Insert at beginning of list
+    newSymbol->next = table[index];
+    table[index] = newSymbol;
+    printf("Inserted: %s (%s), size=%d, scope=%d\n", name, type, size, scope);
+}
+
+// Search for a symbol
+struct symbol* search(char *name, int scope) {
+    int index = hash(name);
+    struct symbol *temp = table[index];
+    while (temp != NULL) {
+        if (strcmp(temp->name, name) == 0 && temp->scope == scope) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+
+// Display all symbols
+void display() {
+    printf("\n%-15s %-10s %-5s %-5s\n", "Name", "Type", "Size", "Scope");
+    printf("--------------------------------------------------\n");
+    for (int i = 0; i < MAX; i++) {
+        struct symbol *temp = table[i];
+        while (temp != NULL) {
+            printf("%-15s %-10s %-5d %-5d\n", temp->name, temp->type, temp->size, temp->scope);
+            temp = temp->next;
+        }
+    }
+}
+
+// Main function
+int main() {
+    insert("x", "int", 4, 0);
+    insert("y", "float", 8, 0);
+    insert("z", "char", 1, 1);
+    insert("x", "int", 4, 1);  // valid: different scope
+    insert("x", "int", 4, 0);  // error: duplicate in same scope
+
+    struct symbol* found = search("z", 1);
+    if (found != NULL)
+        printf("\nFound: %s of type %s in scope %d\n", found->name, found->type, found->scope);
+    else
+        printf("\nSymbol not found.\n");
+
+    display();
+    return 0;
+}

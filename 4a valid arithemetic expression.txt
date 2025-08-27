@@ -1,0 +1,46 @@
+YACC Code: expr.y
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token NUM ID
+%%
+E: E '+' T   { printf("Matched E + T\n"); }
+ | E '-' T   { printf("Matched E - T\n"); }
+ | T;
+T: T '*' F   { printf("Matched T * F\n"); }
+ | T '/' F   { printf("Matched T / F\n"); }
+ | F;
+F: '(' E ')' { printf("Matched (E)\n"); }
+ | NUM
+ | ID;
+%%
+int main() {
+    printf("Enter an arithmetic expression:\n");
+    yyparse();
+    return 0;
+}
+int yyerror(char *s) {
+    printf("Syntax Error: %s\n", s);
+    return 0;
+}
+LEX Code: expr.l
+%{
+#include "y.tab.h"
+%}
+%%
+[0-9]+              { yylval = atoi(yytext); return NUM; }
+[a-zA-Z_][a-zA-Z0-9_]* { return ID; }
+[+\-*/()=]          { return yytext[0]; }
+[ \t\n]             ;  // skip whitespace
+.                   { printf("Unknown character: %s\n", yytext); }
+
+%%
+int yywrap() {
+    return 1;
+}
+To Compile and Run All Programs:
+lex file.l
+yacc -d file.y
+gcc lex.yy.c y.tab.c -o output
+./output
