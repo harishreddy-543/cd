@@ -1,0 +1,45 @@
+a)	Ceaser cipher
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+public class CaesarCipher {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        System.out.print("Enter any String: ");
+        String str = br.readLine();
+        System.out.print("Enter the Key: ");
+        int key = Integer.parseInt(br.readLine());
+        String encrypted = encrypt(str, key);
+        System.out.println("\nEncrypted String is: " + encrypted);
+        String decrypted = decrypt(encrypted, key);
+        System.out.println("Decrypted String is: " + decrypted);
+    }
+    public static String encrypt(String str, int key) {
+        StringBuilder encrypted = new StringBuilder();
+        key = ((key % 26) + 26) % 26;  // normalize key to [0,25]
+for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+                char base = 'A';
+                c = (char) ((c - base + key) % 26 + base);
+            } else if (Character.isLowerCase(c)) {
+                char base = 'a';
+                c = (char) ((c - base + key) % 26 + base);
+            }
+            // non-letter chars remain unchanged
+            encrypted.append(c);
+        }
+        return encrypted.toString();
+    }
+    public static String decrypt(String str, int key) {
+        // decryption is encrypt with negative shift
+        return encrypt(str, 26 - (key % 26));
+    }
+}
+OUTPUT:
+Enter any String: Hello, World!
+Enter the Key: 3
+Encrypted String is: Khoor, Zruog!
+Decrypted String is: Hello, World!
+
+

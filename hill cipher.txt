@@ -1,0 +1,92 @@
+import java.io.*;
+import java.util.*;
+
+public class HillCipher {
+    static float[][] decrypt = new float[3][1];
+    static float[][] a = new float[3][3];
+    static float[][] b = new float[3][3];
+    static float[][] mes = new float[3][1];
+    static float[][] res = new float[3][1];
+
+    static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    static Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) throws IOException {
+        getKeyMes();
+
+        // Encryption: res = a × mes
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 1; j++)
+                for (int k = 0; k < 3; k++)
+                    res[i][j] += a[i][k] * mes[k][j];
+
+        System.out.print("\nEncrypted string is: ");
+        for (int i = 0; i < 3; i++) {
+            System.out.print((char) (res[i][0] % 26 + 97));
+        }
+
+        inverse(); // Computes inverse b
+
+        // Decryption: decrypt = b × res
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 1; j++)
+                for (int k = 0; k < 3; k++)
+                    decrypt[i][j] += b[i][k] * res[k][j];
+
+        System.out.print("\nDecrypted string is: ");
+        for (int i = 0; i < 3; i++) {
+            System.out.print((char) (decrypt[i][0] % 26 + 97));
+        }
+        System.out.println();
+    }
+
+    public static void getKeyMes() throws IOException {
+        System.out.println("Enter 3×3 matrix for key (must be invertible):");
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                a[i][j] = sc.nextFloat();
+
+        System.out.print("Enter a 3‑letter string: ");
+        String msg = br.readLine().toLowerCase();
+        for (int i = 0; i < 3; i++)
+            mes[i][0] = msg.charAt(i) - 'a';
+    }
+
+    public static void inverse() {
+        // Compute inverse of matrix a into b using Gauss‑Jordan elimination
+        float[][] c = new float[3][3];
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++) {
+                c[i][j] = a[i][j];
+                b[i][j] = (i == j ? 1 : 0);
+            }
+
+        for (int k = 0; k < 3; k++) {
+            for (int i = 0; i < 3; i++) {
+                if (i != k) {
+                    float factor = c[i][k] / c[k][k];
+                    for (int j = 0; j < 3; j++) {
+                        c[i][j] -= factor * c[k][j];
+                        b[i][j] -= factor * b[k][j];
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                b[i][j] /= c[i][i];
+
+        System.out.println("\nInverse matrix is:");
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++)
+                System.out.printf("%.3f ", b[i][j]);
+            System.out.println();
+        }
+    }
+}	
+Output:
+Entera3letterstring:haiEncryptedstringis:fdxInverseMatrixis: 0.083333336 0.41666666 -  0.33333334
+-0.41666666-0.0833333360.6666667
+0.5833333-0.083333336-0.33333334
+Decryptedstringis:hai
+
